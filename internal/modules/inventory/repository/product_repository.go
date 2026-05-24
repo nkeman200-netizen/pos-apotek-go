@@ -42,13 +42,13 @@ func(r *productRepositoryimpl) FindAll()([]entity.Product,error){
 
 func(r *productRepositoryimpl) FindById(id uint)(entity.Product,error){
 	var product entity.Product
-	queryStock:="select COALESCE(SUM(stock),0) from product_batch where product_batch.product_id=product.id"
+	queryStock:="select COALESCE(SUM(stock),0) from product_batches where product_batches.product_id=products.id"
 	err:=r.db.Select("product.*, "+queryStock+" as total_stock").Preload("Unit").Preload("Category").First(&product,id).Error
 	return product,err
 }
 func(r *productRepositoryimpl) FindBySKU(sku string)(entity.Product,error){
 	var product entity.Product
-	queryStock:="select COALESCE(SUM(stock),0) from product_batch where product_batch.product_id=product.id"
+	queryStock:="select COALESCE(SUM(stock),0) from product_batches where product_batches.product_id=products.id"
 	err:=r.db.Select("product.*, "+queryStock+" as total_stock").Preload("Unit").Preload("Category").Where("SKU = ?",sku).First(&product).Error
 	return product,err
 }

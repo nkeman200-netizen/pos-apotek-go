@@ -2,6 +2,7 @@ package config
 
 import (
 	"apotek-pos-go/internal/modules/inventory/entity"
+	"apotek-pos-go/internal/modules/users/entitty"
 	"log"
 
 	"gorm.io/driver/mysql"
@@ -27,6 +28,7 @@ func ConnectDB(){
 		&entity.Product{},
 		&entity.Unit{},
 		&entity.ProductBatch{},
+		&entitty.User{},
 	)
 	if err!=nil {
 		log.Fatal("Gagal migrate: ", err)
