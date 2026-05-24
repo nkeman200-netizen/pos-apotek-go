@@ -38,7 +38,7 @@ func (h *productHandler) Create(c *gin.Context){
 		return 
 	}
 
-	c.JSON(http.StatusOK,response.Response[entity.Product]{
+	c.JSON(http.StatusCreated,response.Response[entity.Product]{
 		Code: 201,
 		Message: "Berhasil membuat product baru",
 		Data: product,

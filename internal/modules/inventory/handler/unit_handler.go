@@ -36,7 +36,7 @@ func (h *UnitHandler) Create(c *gin.Context){
 		})
 		return 
 	}
-	c.JSON(http.StatusOK,response.Response[entity.Unit]{
+	c.JSON(http.StatusCreated,response.Response[entity.Unit]{
 		Code: 201,
 		Message: "Berhasil membuat unit baru",
 		Data: unit,

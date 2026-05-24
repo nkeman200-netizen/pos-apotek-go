@@ -37,7 +37,7 @@ func(h *productBatchHandler) Create(c *gin.Context){
 		return
 	}
 
-	c.JSON(http.StatusOK,response.Response[entity.ProductBatch]{
+	c.JSON(http.StatusCreated,response.Response[entity.ProductBatch]{
 		Code: 201,
 		Message: "Berhasil menambahkan product batch baru",
 		Data: pb,

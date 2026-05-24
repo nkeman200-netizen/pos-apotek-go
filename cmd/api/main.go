@@ -5,6 +5,9 @@ import (
 	"apotek-pos-go/internal/modules/inventory/handler"
 	"apotek-pos-go/internal/modules/inventory/repository"
 	"apotek-pos-go/internal/modules/inventory/service"
+	userHndl "apotek-pos-go/internal/modules/users/handler"
+	userRepo "apotek-pos-go/internal/modules/users/repository"
+	userSrv "apotek-pos-go/internal/modules/users/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +37,10 @@ func main() {
 	pbRepo:=repository.NewProductBatchRepository(config.DB)
 	pbSrv:=service.NewProductBatchService(pbRepo,productRepo)
 	pbHndl:=handler.NewProductBatchHandler(pbSrv)
+
+	userRepo:=userRepo.NewUserRepo(config.DB);
+	userSrv:=userSrv.NewUserService(userRepo)
+	userHndl:=userHndl.NewUserHandler(userSrv)
 	
 	api:=r.Group("/api")
 	{
@@ -60,6 +67,12 @@ func main() {
 		api.DELETE("/product-batches/:id",pbHndl.Delete)
 		api.GET("/product-batches",pbHndl.GetAllProductBatch)
 		api.GET("/product-batches/:id",pbHndl.GetProductBatchById)
+		
+		api.POST("/users/register",userHndl.Register)
+		api.PUT("/users/:id",userHndl.UpdateUser)
+		api.DELETE("/users/:id",userHndl.Delete)
+		api.GET("/users",userHndl.GetAllUser)
+		// api.GET("/users/:id",userHndl.GetProductBatchById)
 		
 		
 	}
