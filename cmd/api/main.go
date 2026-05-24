@@ -72,7 +72,7 @@ func main() {
 		api.PUT("/users/:id",userHndl.UpdateUser)
 		api.DELETE("/users/:id",userHndl.Delete)
 		api.GET("/users",userHndl.GetAllUser)
-		// api.GET("/users/:id",userHndl.GetProductBatchById)
+		api.POST("/users/login", userHndl.Login)
 		
 		
 	}

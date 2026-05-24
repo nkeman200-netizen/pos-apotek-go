@@ -18,6 +18,13 @@ func NewUserHandler(srv service.UserService) *UserHandler{
 	return &UserHandler{srv: srv}
 }
 
+// struct request. harus kapital untuk metode should bind json bisa akses
+type UserRequest struct{
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+}
+
 func (h *UserHandler) Register(c *gin.Context){
 	var user entitty.User
 	if err:=c.ShouldBindJSON(&user);err!=nil {
@@ -46,6 +53,7 @@ func (h *UserHandler) Register(c *gin.Context){
 }
 
 func (h *UserHandler) UpdateUser(c *gin.Context){
+	var req UserRequest
 	var user entitty.User
 	idS:=c.Param("id")
 	idI,err:=strconv.Atoi(idS)
@@ -58,7 +66,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context){
 		return
 	}
 	
-	if err:=c.ShouldBindJSON(&user);err!=nil {
+	if err:=c.ShouldBindJSON(&req);err!=nil {
 		c.JSON(http.StatusBadRequest,response.Response[any]{
 			Code: 400,
 			Message: "Format data salah: "+err.Error(),
@@ -68,6 +76,9 @@ func (h *UserHandler) UpdateUser(c *gin.Context){
 	}
 
 	user.Id=uint(idI)
+	user.Username=req.Username
+	user.Password=req.Password
+	user.Role=req.Role
 
 	if err:=h.srv.UpdateUser(&user);err!=nil {
 		c.JSON(http.StatusInternalServerError, response.Response[any]{
@@ -133,3 +144,31 @@ func(h *UserHandler) Delete(c *gin.Context){
 
 }
 
+
+
+func(h *UserHandler) Login(c *gin.Context){
+	var req UserRequest
+	if err:=c.ShouldBindJSON(&req);err!=nil {
+		c.JSON(http.StatusBadRequest,response.Response[any]{
+			Code: 400,
+			Message: "Format data salah: "+err.Error(),
+			Data: nil,
+		})
+		return 
+	}
+	token,err:=h.srv.Login(req.Username,req.Password)
+	if err!=nil {
+		c.JSON(http.StatusUnauthorized,response.Response[any]{
+			Code: 401,
+			Message: "Akses ditolak: "+err.Error(),
+			Data: nil,
+		})
+		return 
+	}
+
+	c.JSON(http.StatusOK,response.Response[string]{
+		Code: 200,
+		Message: "Login berhasil",
+		Data: token,
+	})
+}

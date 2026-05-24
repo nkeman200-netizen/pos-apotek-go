@@ -14,6 +14,7 @@ type UserRepo interface {
 	Delete(id uint) error
 	FindAll()([]entitty.User,error)
 	FindById(id uint) error
+	GetUserByUsername(username string) (entitty.User,error)
 }
 
 type userRepoImpl struct{
@@ -48,6 +49,12 @@ func(r *userRepoImpl) FindByUsername(username string) error{
 
 func(r *userRepoImpl) FindById(id uint) error{
 	return r.db.First(&entitty.User{},id).Error
+}
+
+func(r *userRepoImpl) GetUserByUsername(username string) (entitty.User,error){
+	var user entitty.User
+	err:=r.db.Where("username=?",username).First(&user).Error
+	return user,err
 }
 
 func(r *userRepoImpl) Update(u *entitty.User) error{
