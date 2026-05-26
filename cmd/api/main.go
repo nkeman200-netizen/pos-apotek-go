@@ -8,11 +8,18 @@ import (
 	userHndl "apotek-pos-go/internal/modules/users/handler"
 	userRepo "apotek-pos-go/internal/modules/users/repository"
 	userSrv "apotek-pos-go/internal/modules/users/service"
+	"apotek-pos-go/internal/pkg/midleware"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	config.ConnectDB()
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
@@ -43,36 +50,42 @@ func main() {
 	userHndl:=userHndl.NewUserHandler(userSrv)
 	
 	api:=r.Group("/api")
+
+	api.POST("/users/register",userHndl.Register)
+	api.POST("/users/login", userHndl.Login)
+
+	privateRoutes:=api.Group("/")
+	privateRoutes.Use(midleware.JwtAuthMidleware())
 	{
-		api.POST("/categories",categoryHndl.Create)
-		api.GET("/categories",categoryHndl.GetAll)
-		api.GET("/categories/:id",categoryHndl.GetById)
-		api.PUT("/categories/:id",categoryHndl.Update)
-		api.DELETE("/categories/:id",categoryHndl.Delete)
+		admin := privateRoutes.Group("/")
+		admin.Use(midleware.AdminMidleware()) 
+		{ 
+			admin.POST("/categories",categoryHndl.Create)
+			admin.PUT("/categories/:id",categoryHndl.Update)
+			admin.DELETE("/categories/:id",categoryHndl.Delete)
+			
+			admin.POST("/units",unitHndl.Create)
+			admin.PUT("/units/:id",unitHndl.Update)
+			admin.DELETE("/units/:id",unitHndl.Delete)
 
-		api.POST("/units",unitHndl.Create)
-		api.PUT("/units/:id",unitHndl.Update)
-		api.DELETE("/units/:id",unitHndl.Delete)
-		api.GET("/units",unitHndl.GetAll)
-		api.GET("/units/:id",unitHndl.GetUnitById)
+			admin.POST("/products",productHndl.Create)
+			admin.PUT("/products/:id",productHndl.Update)
+			admin.DELETE("/products/:id",productHndl.Delete)
 
-		api.POST("/products",productHndl.Create)
-		api.PUT("/products/:id",productHndl.Update)
-		api.DELETE("/products/:id",productHndl.Delete)
-		api.GET("/products",productHndl.GetAllProduct)
-		api.GET("/products/:id",productHndl.GetProductById)
-
-		api.POST("/product-batches",pbHndl.Create)
-		api.PUT("/product-batches/:id",pbHndl.Update)
-		api.DELETE("/product-batches/:id",pbHndl.Delete)
-		api.GET("/product-batches",pbHndl.GetAllProductBatch)
-		api.GET("/product-batches/:id",pbHndl.GetProductBatchById)
+			admin.POST("/product-batches",pbHndl.Create)
+			admin.PUT("/product-batches/:id",pbHndl.Update)
+			
+			admin.DELETE("/product-batches/:id",pbHndl.Delete) 
+		}
 		
-		api.POST("/users/register",userHndl.Register)
-		api.PUT("/users/:id",userHndl.UpdateUser)
-		api.DELETE("/users/:id",userHndl.Delete)
-		api.GET("/users",userHndl.GetAllUser)
-		api.POST("/users/login", userHndl.Login)
+
+		owner := privateRoutes.Group("/")
+		owner.Use(midleware.OwnerMidleware())
+		{
+			owner.PUT("/users/:id",userHndl.UpdateUser)
+			owner.DELETE("/users/:id",userHndl.Delete)
+			owner.GET("/users",userHndl.GetAllUser)
+		}
 		
 		
 	}

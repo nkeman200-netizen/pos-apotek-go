@@ -4,6 +4,7 @@ import (
 	"apotek-pos-go/internal/modules/users/entitty"
 	"apotek-pos-go/internal/modules/users/repository"
 	"errors"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -60,7 +61,7 @@ func(s *userServiceImpl) Delete(id uint) error{
 	return s.repo.Delete(id)
 }
 
-var JwtSecretKey = []byte("ApotekPOS_SuperSecret_2026")
+
 func(s *userServiceImpl) Login(username string, password string) (string,error){
 	var user entitty.User
 	user,err:=s.repo.GetUserByUsername(username)
@@ -82,7 +83,10 @@ func(s *userServiceImpl) Login(username string, password string) (string,error){
 
 
 	token:=jwt.NewWithClaims(jwt.SigningMethodHS256,claim)
-	tokenStrg,err:=token.SignedString(JwtSecretKey)
+
+	jwtKeyString:=os.Getenv("JWT_SECRET_KEY")
+	jwtKeyBytes:=[]byte(jwtKeyString)
+	tokenStrg,err:=token.SignedString(jwtKeyBytes)
 	if err!=nil {
 		return "",errors.New("Gagal mencetak token")
 	}
