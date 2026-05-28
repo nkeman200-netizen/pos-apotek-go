@@ -1,1 +1,26 @@
+# Kredensial dan Lingkungan (Sangat Rahasia)
 .env
+*.env
+*.pem
+*.key
+
+# Konfigurasi IDE GoLand / JetBrains
+.idea/
+*.iml
+*.iws
+
+# Hasil Compile dan File Binar Go
+/bin/
+/out/
+*.exe
+*.exe_
+*.dll
+*.so
+*.dylib
+__debug_bin
+app
+main
+
+# File Log dan Cache
+*.log
+.build/
