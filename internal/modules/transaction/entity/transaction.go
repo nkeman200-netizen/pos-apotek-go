@@ -34,5 +34,5 @@ type TransactionDetails struct {
 	ProductBatch   entity.ProductBatch `gorm:"foreignKey:ProductBatchId;constraint:OnUpdate:cascade;OnDelete:restrict" json:"product_batch"`
 	Quantity       int                 `gorm:"not null;min:1" json:"quantity"`
 	UnitPrice      int64               `gorm:"Type:bigint;not null" json:"unit_price"`
-	SubTotal       int64               `gorm:"not nul;type:bigint" json:"sub_totalb"`
+	SubTotal       int64               `gorm:"not null;type:bigint" json:"sub_total"`
 }

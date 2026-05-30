@@ -12,6 +12,7 @@ type ProductBatchRepository interface {
 	Delete(id uint) error
 	FindAll() ([]entity.ProductBatch,error)
 	FindById(id uint) (entity.ProductBatch,error)
+	FindByProductId(id uint) ([]entity.ProductBatch,error)
 }
 
 type productBatchRepositoryImpl struct{
@@ -43,5 +44,14 @@ func(r *productBatchRepositoryImpl) FindAll() ([]entity.ProductBatch,error){
 func(r *productBatchRepositoryImpl) FindById(id uint) (entity.ProductBatch,error){
 	var pb entity.ProductBatch
 	err:=r.db.Preload("Product").First(&pb,id).Error
+	return pb,err
+}
+
+func(r *productBatchRepositoryImpl) FindByProductId(id uint) ([]entity.ProductBatch,error){
+	var pb []entity.ProductBatch
+	err:=r.db.Preload("Product").
+		Where("product_id=?",id).
+		Order("expired_date ASC").
+		Find(&pb).Error
 	return pb,err
 }

@@ -50,6 +50,7 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if ok && token.Valid {
+			c.Set("user_id",claims["id"])
 			c.Set("role", claims["role"])
 			c.Set("username", claims["username"])
 		}
