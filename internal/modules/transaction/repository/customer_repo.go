@@ -11,6 +11,7 @@ type CustomerRepo interface {
 	Update(c *entity.Customer) error
 	FindAll() ([]entity.Customer, error)
 	FindById(id uint) (entity.Customer, error)
+	Delete(id uint) error
 }
 
 type customerRepoImp struct {
@@ -32,14 +33,18 @@ func (r *customerRepoImp) FindAll() ([]entity.Customer, error) {
 // FindById implements [CustomerRepo].
 func (r *customerRepoImp) FindById(id uint) (entity.Customer, error) {
 	var cus entity.Customer
-	err:=r.db.Find(&cus,id).Error
+	err:=r.db.First(&cus,id).Error
 	return cus,err
 }
 
 // Update implements [CustomerRepo].
 func (r *customerRepoImp) Update(c *entity.Customer) error {
-	return r.db.Save(&c).Error
-	
+
+	return r.db.Model(&entity.Customer{}).Where("id=?",c.Id).Updates(c).Error
+}
+
+func(r *customerRepoImp) Delete(id uint) error{
+	return r.db.Delete(&entity.Customer{},id).Error
 }
 
 func NewCustomerRepo(db *gorm.DB) CustomerRepo {

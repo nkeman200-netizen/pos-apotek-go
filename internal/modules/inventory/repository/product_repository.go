@@ -27,7 +27,7 @@ func (r *productRepositoryimpl) Create(product *entity.Product) error{
 	return r.db.Create(product).Error
 }
 func (r *productRepositoryimpl) Update(product *entity.Product) error{
-	return r.db.Save(product).Error
+	return r.db.Model(&entity.Product{}).Where("id=?",product.ID).Updates(product).Error
 }
 
 func (r *productRepositoryimpl) Delete(id uint) error{
@@ -42,13 +42,13 @@ func(r *productRepositoryimpl) FindAll()([]entity.Product,error){
 
 func(r *productRepositoryimpl) FindById(id uint)(entity.Product,error){
 	var product entity.Product
-	queryStock:="select COALESCE(SUM(stock),0) from product_batches where product_batches.product_id=products.id"
-	err:=r.db.Select("product.*, "+queryStock+" as total_stock").Preload("Unit").Preload("Category").First(&product,id).Error
+	queryStock:="(select COALESCE(SUM(stock),0) from product_batches where product_batches.product_id=products.id)"
+	err:=r.db.Select("products.*, "+queryStock+" as total_stock").Preload("Unit").Preload("Category").First(&product,id).Error
 	return product,err
 }
 func(r *productRepositoryimpl) FindBySKU(sku string)(entity.Product,error){
 	var product entity.Product
-	queryStock:="select COALESCE(SUM(stock),0) from product_batches where product_batches.product_id=products.id"
-	err:=r.db.Select("product.*, "+queryStock+" as total_stock").Preload("Unit").Preload("Category").Where("SKU = ?",sku).First(&product).Error
+	queryStock:="(select COALESCE(SUM(stock),0) from product_batches where product_batches.product_id=products.id)"
+	err:=r.db.Select("products.*, "+queryStock+" as total_stock").Preload("Unit").Preload("Category").Where("SKU = ?",sku).First(&product).Error
 	return product,err
 }

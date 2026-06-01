@@ -44,6 +44,7 @@ func (r *transactionRepositoryImpl) Create(t *entity.Transaction) error {
 
 func(r *transactionRepositoryImpl) Void(t *entity.Transaction) error{
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		t.Status="void"
 		if err:=tx.Save(t).Error;err!=nil { //status dan pesn void diatur di service
 			return err
 		}

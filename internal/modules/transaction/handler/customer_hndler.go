@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"apotek-pos-go/internal/modules/inventory/entity"
-	"apotek-pos-go/internal/modules/inventory/service"
+	"apotek-pos-go/internal/modules/transaction/entity"
+	"apotek-pos-go/internal/modules/transaction/service"
 	"apotek-pos-go/internal/pkg/response"
 	"net/http"
 	"strconv"
@@ -10,17 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CategoryHandler struct {
-	srv service.CategoryService
+type CustomerHndler struct {
+	srv service.CustomerSrv
 }
 
-func NewCategoryHandler(srv service.CategoryService) *CategoryHandler{
-	return &CategoryHandler{srv: srv}
+func NewCustomerHndler(srv service.CustomerSrv) *CustomerHndler{
+	return &CustomerHndler{srv: srv}
 }
 
-func (h *CategoryHandler) Create(c *gin.Context){
-	var category entity.Category
-	if err:=c.ShouldBindJSON(&category); err!=nil {
+func (h *CustomerHndler) Create(c *gin.Context){
+	var customer entity.Customer
+	if err:=c.ShouldBindJSON(&customer); err!=nil {
 		c.JSON(http.StatusBadRequest, response.Response[any]{
 			Code: 400,
 			Message: "Format data salah: " + err.Error(),
@@ -29,25 +29,25 @@ func (h *CategoryHandler) Create(c *gin.Context){
 		return
 	}
 
-	if err:=h.srv.CreateCategory(&category); err!=nil {
+	if err:=h.srv.Create(&customer); err!=nil {
 		c.JSON(http.StatusInternalServerError, response.Response[any]{
 			Code: 500,
-			Message: "Gagal membuat category baru",
+			Message: "Gagal membuat customer baru",
 			Data: nil,
 		})
 		return 
 	}
 
-	c.JSON(http.StatusCreated,response.Response[entity.Category]{
+	c.JSON(http.StatusCreated,response.Response[entity.Customer]{
 		Code: 201,
-		Message: "Berhasil menambahkan category",
-		Data: category,
+		Message: "Berhasil menambahkan customer",
+		Data: customer,
 	})
 }
 
-func (h *CategoryHandler) GetAll(c *gin.Context) {
-	var category []entity.Category
-	category,err:=h.srv.GetAllCategory()
+func (h *CustomerHndler) GetAll(c *gin.Context) {
+	var customer []entity.Customer
+	customer,err:=h.srv.GetAll()
 	if err!=nil{
 		c.JSON(http.StatusInternalServerError,response.Response[any]{
 			Code: 500,
@@ -57,55 +57,55 @@ func (h *CategoryHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK,response.Response[[]entity.Category]{
+	c.JSON(http.StatusOK,response.Response[[]entity.Customer]{
 		Code: 200,
-		Message: "Berhasil mengambil semua data category",
-		Data: category,
+		Message: "Berhasil mengambil semua data customer",
+		Data: customer,
 	})
 }
 
-func (h *CategoryHandler) GetById(c *gin.Context){
+func (h *CustomerHndler) GetById(c *gin.Context){
 	idStr:=c.Param("id")
 	idInt,err:=strconv.Atoi(idStr)
 	if err!=nil {
 		c.JSON(http.StatusBadRequest,response.Response[any]{
 			Code: 400,
-			Message: "Masukan hanya angka category id",
+			Message: "Masukan hanya angka customer id",
 			Data: nil,
 		})	
 		return
 	}
 
-	category, err:= h.srv.GetCategoryById(uint(idInt))
+	customer, err:= h.srv.GetUnitById(uint(idInt))
 	if err!=nil {
 		c.JSON(http.StatusNotFound,response.Response[any]{
 			Code: 404,
-			Message: "Kategori tidak ditemukan",
+			Message: "customer tidak ditemukan",
 			Data: nil,
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK,response.Response[entity.Category]{
+	c.JSON(http.StatusOK,response.Response[entity.Customer]{
 		Code: 200,
-		Message: "get category by id berhasil",
-		Data: category,
+		Message: "get customer by id berhasil",
+		Data: customer,
 	})
 }
 
-func (h *CategoryHandler) Update(c *gin.Context){
-	var category entity.Category
+func (h *CustomerHndler) Update(c *gin.Context){
+	var customer entity.Customer
 	idStr:=c.Param("id")
 	idInt,err:=strconv.Atoi(idStr)
 	if err!=nil {
 		c.JSON(http.StatusBadRequest,response.Response[any]{
 			Code: 400,
-			Message: "Masukan id categgory",
+			Message: "Masukan id customer",
 			Data: nil,
 		})
 		return
 	}
-	if err:=c.ShouldBindJSON(&category);err!=nil {
+	if err:=c.ShouldBindJSON(&customer);err!=nil {
 		c.JSON(http.StatusBadRequest,response.Response[any]{
 			Code: 400,
 			Message: "Format data salah: " + err.Error(),
@@ -113,9 +113,9 @@ func (h *CategoryHandler) Update(c *gin.Context){
 		})
 		return
 	}
-	category.Id=uint(idInt)
+	customer.Id=uint(idInt)
 
-	err= h.srv.UpdateCategory(&category)
+	err= h.srv.Update(&customer)
 	if err!=nil {
 		c.JSON(http.StatusInternalServerError,response.Response[any]{
 			Code: 500,
@@ -124,14 +124,14 @@ func (h *CategoryHandler) Update(c *gin.Context){
 		})
 		return
 	}
-	c.JSON(http.StatusOK,response.Response[entity.Category]{
+	c.JSON(http.StatusOK,response.Response[entity.Customer]{
 		Code: 200,
-		Message: "Berhasil memperbarui data category",
-		Data: category,
+		Message: "Berhasil memperbarui data customer",
+		Data: customer,
 	})
 }
 
-func (h *CategoryHandler) Delete(c *gin.Context){
+func (h *CustomerHndler) Delete(c *gin.Context){
 	idStr:=c.Param("id")
 	idInt,err:=strconv.Atoi(idStr)
 	if err!=nil {
@@ -142,7 +142,7 @@ func (h *CategoryHandler) Delete(c *gin.Context){
 		})
 		return
 	}
-	err=h.srv.DeleteCategory(uint(idInt))
+	err=h.srv.Delete(uint(idInt))
 	if err!=nil {
 		c.JSON(http.StatusInternalServerError,response.Response[any]{
 			Code: 500,
@@ -153,7 +153,7 @@ func (h *CategoryHandler) Delete(c *gin.Context){
 	}
 	c.JSON(http.StatusOK,response.Response[any]{
 		Code: 204,
-		Message: "Data category berhasil dihapus",
+		Message: "Data customer berhasil dihapus",
 		Data: nil,
 	})
 }

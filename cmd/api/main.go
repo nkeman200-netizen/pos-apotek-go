@@ -8,6 +8,12 @@ import (
 	userHndler "apotek-pos-go/internal/modules/users/handler"
 	userRepository "apotek-pos-go/internal/modules/users/repository"
 	userSrvice "apotek-pos-go/internal/modules/users/service"
+	transactionHndler "apotek-pos-go/internal/modules/transaction/handler"
+	transactionRepository "apotek-pos-go/internal/modules/transaction/repository"
+	transactionSrvice "apotek-pos-go/internal/modules/transaction/service"
+	purchasesHndler "apotek-pos-go/internal/modules/purchases/handler"
+	purchasesRepository "apotek-pos-go/internal/modules/purchases/repo"
+	purchasesSrvice "apotek-pos-go/internal/modules/purchases/service"
 	"apotek-pos-go/internal/pkg/midleware"
 	"log"
 	"net/http"
@@ -50,6 +56,22 @@ func main() {
 	userSrv := userSrvice.NewUserService(userRepo)
 	userHndl := userHndler.NewUserHandler(userSrv)
 
+	transRepo := transactionRepository.NewTransactionRepository(config.DB)
+	customerRepo := transactionRepository.NewCustomerRepo(config.DB)
+	transSrv := transactionSrvice.NewTransactionServiceImpl(transRepo,customerRepo,userRepo,pbRepo)
+	transHndl := transactionHndler.NewTransactionHndl(transSrv,pbSrv)
+	
+	customerSrv:=transactionSrvice.NewCustomerSrv(customerRepo)
+	customerHndler:=transactionHndler.NewCustomerHndler(customerSrv)
+
+	supplierRepo := purchasesRepository.NewSupplierRepo(config.DB)
+	supplierSrv:=purchasesSrvice.NewSupplierSrv(supplierRepo)
+	supplierHandler:=purchasesHndler.NewSupplierHandler(supplierSrv)
+
+	purchaseRepo := purchasesRepository.NewPurchaseRepo(config.DB)
+	purchaseSrv := purchasesSrvice.NewPurchaseRepo(purchaseRepo,supplierRepo,userRepo)
+	purchaseHndl := purchasesHndler.NewPurchaseHandler(purchaseSrv)
+
 	api := r.Group("/api")
 
 	api.POST("/users/register", userHndl.Register)
@@ -58,6 +80,34 @@ func main() {
 	privateRoutes := api.Group("/")
 	privateRoutes.Use(midleware.JwtAuthMiddleware())
 	{
+		admKsr := privateRoutes.Group("/")
+		admKsr.Use(midleware.AdminKasirMiddleware())
+		{
+			admKsr.POST("/transactions",transHndl.Create)
+			admKsr.PUT("/transactions/:id",transHndl.Void)
+			admKsr.POST("/customers",customerHndler.Create)
+			admKsr.PUT("/customers/:id",customerHndler.Update)
+			admKsr.DELETE("/customers/:id",customerHndler.Delete)
+			
+		}
+
+		admOwnr:=privateRoutes.Group("/")
+		admOwnr.Use(midleware.OwnerAdminMiddleware())
+		{
+			admOwnr.GET("/purchases",purchaseHndl.GetAll)
+			admOwnr.GET("/purchases/:id",purchaseHndl.GetById)
+
+			admOwnr.GET("/units", unitHndl.GetAll)
+			admOwnr.GET("/units/:id", unitHndl.GetUnitById)
+
+			admOwnr.GET("/categories", categoryHndl.GetAll)
+			admOwnr.GET("/categories/:id", categoryHndl.GetById)
+
+			admOwnr.GET("/supplier/",supplierHandler.GetAll)
+			admOwnr.GET("/supplier/:id",supplierHandler.GetSupplierById)
+
+		}
+
 		admin := privateRoutes.Group("/")
 		admin.Use(midleware.AdminMiddleware())
 		{
@@ -75,8 +125,14 @@ func main() {
 
 			admin.POST("/product-batches", pbHndl.Create)
 			admin.PUT("/product-batches/:id", pbHndl.Update)
-
 			admin.DELETE("/product-batches/:id", pbHndl.Delete)
+
+			admin.POST("/purchases", purchaseHndl.Create)
+			admin.PUT("/purchases/:id", purchaseHndl.Void)
+
+			admin.POST("/supplier",supplierHandler.Create)
+			admin.PUT("/supplier/:id",supplierHandler.Update)
+			admin.DELETE("/supplier/:id",supplierHandler.Delete)
 		}
 
 		owner := privateRoutes.Group("/")
@@ -86,6 +142,18 @@ func main() {
 			owner.DELETE("/users/:id", userHndl.Delete)
 			owner.GET("/users", userHndl.GetAllUser)
 		}
+
+		privateRoutes.GET("/products", productHndl.GetAllProduct)
+		privateRoutes.GET("/products/:id", productHndl.GetProductById)
+		
+		privateRoutes.GET("/product-batches", pbHndl.GetAllProductBatch)
+		privateRoutes.GET("/product-batches/:id", pbHndl.GetProductBatchById)
+
+		privateRoutes.GET("/transactions",transHndl.GetAllTransaction)
+		privateRoutes.GET("/transactions/:id",transHndl.GetTransactionById)
+
+		privateRoutes.GET("/customers",customerHndler.GetAll)
+		privateRoutes.GET("/customers/:id",customerHndler.GetById)
 
 	}
 

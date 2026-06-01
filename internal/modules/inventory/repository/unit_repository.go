@@ -28,7 +28,7 @@ func (r *unitRepositoryImp) Create(unit *entity.Unit) error{
 }
 
 func (r *unitRepositoryImp) Update(unit *entity.Unit) error{
-	err:=r.db.Save(unit).Error //pake save bukan update
+	err:=r.db.Model(&entity.Unit{}).Where("id=?",unit.ID).Updates(unit).Error//pake save bukan update
 	return err
 }
 

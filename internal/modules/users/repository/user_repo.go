@@ -26,7 +26,7 @@ func NewUserRepo(db *gorm.DB) UserRepo {
 }
 
 func (r *userRepoImpl) Create(user *entitty.User) error {
-	return r.db.Save(user).Error
+	return r.db.Model(&entitty.User{}).Where("id=?",user.Id).Updates(user).Error
 }
 
 func (r *userRepoImpl) FindAll() ([]entitty.User, error) {

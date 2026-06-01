@@ -13,6 +13,7 @@ type ProductBatchService interface {
 	DeleteProductBatch(id uint) error
 	GetAllProductBatch() ([]entity.ProductBatch,error)
 	GetProductBatchById(id uint) (entity.ProductBatch,error)
+	GetProductBatchByProductId(id uint) ([]entity.ProductBatch,error)
 }
 
 type productBatchServiceImpl struct{
@@ -44,7 +45,7 @@ func (s *productBatchServiceImpl) CreateProductBatch(pb *entity.ProductBatch) er
 	if pb.ProductID==0 {
 		return errors.New("GAGAL: Product id harus diisi")
 	}
-	if _,err:=s.productRepo.FindById(pb.ProductID);err!=nil	 {
+	if _,err:=s.productRepo.FindById(pb.ProductID);err==nil	 { //artinya gada eror, ya berarti berhasil ditemukan
 		return errors.New("GAGAL: Id product tidak ditemukan di database")
 	}
 
@@ -82,6 +83,12 @@ func (s *productBatchServiceImpl) DeleteProductBatch(id uint) error{
 func(s *productBatchServiceImpl) GetAllProductBatch() ([]entity.ProductBatch,error){
 	var pb []entity.ProductBatch
 	pb,err:=s.repo.FindAll()
+	return pb,err
+}
+
+func(s *productBatchServiceImpl) GetProductBatchByProductId(id uint) ([]entity.ProductBatch,error){
+	var pb []entity.ProductBatch
+	pb,err:=s.repo.FindByProductId(id)
 	return pb,err
 }
 

@@ -59,6 +59,23 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
+func AdminKasirMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exist := c.Get("role")
+
+		if !exist || (role != "admin" && role!="kasir") {
+			c.JSON(http.StatusUnauthorized, response.Response[any]{
+				Code:    401,
+				Message: "Akses ditolak: Menu ini khusus untuk admin",
+				Data:    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
 func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exist := c.Get("role")
@@ -100,6 +117,24 @@ func OwnerMiddleware() gin.HandlerFunc {
 		role, exist := c.Get("role")
 
 		if !exist || role != "owner" {
+			c.JSON(http.StatusUnauthorized, response.Response[any]{
+				Code:    401,
+				Message: "Akses ditolak: Menu ini khusus untuk owner",
+				Data:    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func OwnerAdminMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exist := c.Get("role")
+
+		if !exist || (role != "admin" && role != "owner") {
 			c.JSON(http.StatusUnauthorized, response.Response[any]{
 				Code:    401,
 				Message: "Akses ditolak: Menu ini khusus untuk owner",

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	invRepo "apotek-pos-go/internal/modules/inventory/repository"
+	invRepo "apotek-pos-go/internal/modules/inventory/service"
 	"apotek-pos-go/internal/modules/transaction/entity"
 	"apotek-pos-go/internal/modules/transaction/service"
 	"apotek-pos-go/internal/pkg/response"
@@ -31,16 +31,16 @@ type VoidRequest struct{
 
 type TransactionHndl struct {
 	srv service.TransactionService
-	batchRepo invRepo.ProductBatchRepository
+	batchSrv invRepo.ProductBatchService
 }
 
 func NewTransactionHndl(
 		srv service.TransactionService,
-		batchRepo invRepo.ProductBatchRepository,
+		batchSrv invRepo.ProductBatchService,
 	) *TransactionHndl{
 		return &TransactionHndl{
 			srv: srv,
-			batchRepo: batchRepo,
+			batchSrv: batchSrv,
 		}
 	}
 
@@ -61,7 +61,11 @@ func (h *TransactionHndl) Create(c *gin.Context){
 	t.UserId=uint(idUser.(float64))
 	
 	t.InvoiceNumber="INV-"+strconv.FormatInt(time.Now().Unix(),10)
-	t.CustomerId=req.CustomerId
+	if req.CustomerId==0 {
+		t.CustomerId=nil
+	}else{
+		t.CustomerId=&req.CustomerId
+	}
 	t.PaymentMethod=req.PaymentMethod
 	switch req.PaymentMethod {
 		case "cash":
@@ -73,7 +77,7 @@ func (h *TransactionHndl) Create(c *gin.Context){
 
 	var totalPrice int64
 	for i := range req.Details{
-		batch,_:=h.batchRepo.FindByProductId(req.Details[i].ProductId)
+		batch,_:=h.batchSrv.GetProductBatchByProductId(req.Details[i].ProductId)
 		qtyDibutuhkan:=req.Details[i].Quantity
 		for j :=range batch{
 			if qtyDibutuhkan<=batch[j].Stock {
@@ -158,7 +162,6 @@ func (h *TransactionHndl) Void(c *gin.Context){
 		return 
 	}
 
-	t.Status="void"
 	t.VoidReason=voidReq.VoidReason
 	if err:=h.srv.Void(&t);err!=nil {
 		c.JSON(http.StatusInternalServerError,response.Response[any]{

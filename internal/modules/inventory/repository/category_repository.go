@@ -46,6 +46,6 @@ func (r *categoryRepositoryImpl) Delete(id uint) error{ //unsigne integer
 }
 
 func (r *categoryRepositoryImpl) Update(category *entity.Category) error{
-	err:=r.db.Save(category).Error
+	err:=r.db.Model(&entity.Category{}).Where("id=?",category.Id).Updates(category).Error
 	return  err
 }

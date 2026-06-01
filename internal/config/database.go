@@ -4,6 +4,7 @@ import (
 	"apotek-pos-go/internal/modules/inventory/entity"
 	entity2 "apotek-pos-go/internal/modules/transaction/entity"
 	"apotek-pos-go/internal/modules/users/entitty"
+	entity3 "apotek-pos-go/internal/modules/purchases/entity"
 
 	"log"
 
@@ -31,9 +32,12 @@ func ConnectDB() {
 		&entity.Unit{},
 		&entity.ProductBatch{},
 		&entitty.User{},
-		entity2.Customer{},
-		entity2.Transaction{},
-		entity2.TransactionDetails{},
+		&entity2.Customer{},
+		&entity2.Transaction{},
+		&entity2.TransactionDetails{},
+		&entity3.Purchase{},
+		&entity3.PurchaseDetails{},
+		&entity3.Supplier{},
 	)
 	if err != nil {
 		log.Fatal("Gagal migrate: ", err)

@@ -3,7 +3,7 @@ package entity
 import "time"
 
 type Category struct {
-	ID          uint   `gorm:"primaryKey;autoIncrement"`
+	Id          uint   `gorm:"primaryKey;autoIncrement"`
 	Name        string `gorm:"type:varchar(100);not null"`
 	Description string `gorm:"type:text"`
 	CreatedAt   time.Time `gorm:"autoCreateTime;"`

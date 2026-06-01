@@ -28,7 +28,7 @@ func (r *productBatchRepositoryImpl) Create(pb *entity.ProductBatch) error{
 }
 
 func (r *productBatchRepositoryImpl) Update(pb *entity.ProductBatch) error{
-	return r.db.Save(pb).Error //golang otomatis query update jika di dalam entity terdapat data id
+	return r.db.Model(&entity.ProductBatch{}).Where("id=?",pb.ID).Updates(pb).Error//golang otomatis query update jika di dalam entity terdapat data id
 }
 
 func(r *productBatchRepositoryImpl) Delete(id uint)error{
@@ -37,19 +37,19 @@ func(r *productBatchRepositoryImpl) Delete(id uint)error{
 
 func(r *productBatchRepositoryImpl) FindAll() ([]entity.ProductBatch,error){
 	var pb []entity.ProductBatch
-	err:=r.db.Preload("Product").Find(&pb).Error
+	err:=r.db.Preload("Product").Preload("Product.Unit").Preload("Product.Category").Find(&pb).Error
 	return pb,err
 }
 
 func(r *productBatchRepositoryImpl) FindById(id uint) (entity.ProductBatch,error){
 	var pb entity.ProductBatch
-	err:=r.db.Preload("Product").First(&pb,id).Error
+	err:=r.db.Preload("Product").Preload("Product.Unit").Preload("Product.Category").First(&pb,id).Error
 	return pb,err
 }
 
 func(r *productBatchRepositoryImpl) FindByProductId(id uint) ([]entity.ProductBatch,error){
 	var pb []entity.ProductBatch
-	err:=r.db.Preload("Product").
+	err:=r.db.Preload("Product").Preload("Product.Unit").Preload("Product.Category").
 		Where("product_id=?",id).
 		Order("expired_date ASC").
 		Find(&pb).Error

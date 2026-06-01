@@ -38,11 +38,16 @@ func NewTransactionServiceImpl(
 
 // Create implements [TransactionService].
 func (srv *transactionServiceImpl) Create(t *entity.Transaction) error {
-	if _,err:=srv.cRepo.FindById(t.CustomerId);err!=nil {
-		return errors.New("Customer id tidak ditemukan")
+	if t.CustomerId!=nil {
+		if _,err:=srv.cRepo.FindById(*t.CustomerId);err!=nil {
+			return errors.New("Customer id tidak ditemukan")
+		}
 	}
 	if err:=srv.uRepo.FindById(t.UserId);err!=nil {
 		return errors.New("User id tidak ditemukan")
+	}
+	if t.Pembayaran<t.TotalPrice {
+		return errors.New("Total pembayaran kurang dari total harga")
 	}
 	if t.Kembalian<0{
 		return errors.New("Kembalian tidak boleh kurang dari nol")
@@ -66,6 +71,9 @@ func (srv *transactionServiceImpl) Create(t *entity.Transaction) error {
 
 // Void implements [TransactionService].
 func (srv *transactionServiceImpl) Void(t *entity.Transaction) error {
+	if t.Status=="void" {
+		return errors.New("Nota pembelian ini sudah berstatus void")
+	}
 	if t.VoidReason=="" {
 		return errors.New("Void reason tidak boleh kosong")
 	}
