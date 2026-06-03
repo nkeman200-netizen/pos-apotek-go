@@ -14,6 +14,7 @@ type productHandler struct {
 	srv service.ProductService
 }
 
+
 func NewProductHandler(srv service.ProductService) *productHandler{
 	return &productHandler{srv: srv}
 }
@@ -111,7 +112,18 @@ func (h *productHandler) Delete(c *gin.Context){
 
 func (h *productHandler) GetAllProduct(c *gin.Context){
 	var product []entity.Product
-	product,err:=h.srv.GetAllProduct()
+	var filter entity.ProductFilter
+
+	filter.Name=c.Query("name")
+	filter.SKU=c.Query("sku")
+	filter.UnitId=c.Query("unit_id")
+	filter.CategoryId=c.Query("category_id")
+	limInt,err:=strconv.Atoi(c.DefaultQuery("limit","10"))
+	filter.Limit=limInt
+	pageInt,err:=strconv.Atoi(c.DefaultQuery("page","1"))
+	filter.Page=pageInt
+
+	product,err=h.srv.GetAllProduct(filter)
 	if err!=nil {
 		c.JSON(http.StatusInternalServerError,response.Response[any]{
 			Code: 500,

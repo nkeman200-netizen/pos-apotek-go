@@ -10,7 +10,7 @@ type ProductService interface{
 	CreateProduct(product *entity.Product) error
 	UpdateProduct(product *entity.Product) error
 	DeleteProduct(id uint) error
-	GetAllProduct() ([]entity.Product,error)
+	GetAllProduct(filter entity.ProductFilter) ([]entity.Product,error)
 	GetProductById(id uint) (entity.Product,error)
 }
 
@@ -19,6 +19,7 @@ type productServiceImpl struct {
 	categoryRepo repository.CategoryRepository
 	unitRepo repository.UnitRepository
 }
+
 
 func NewProductService(
 	repo repository.ProductRepository,
@@ -99,9 +100,15 @@ func (s *productServiceImpl) DeleteProduct(id uint) error{
 	return s.repo.Delete(id)
 }
 
-func (s *productServiceImpl) GetAllProduct() ([]entity.Product,error){
+func (s *productServiceImpl) GetAllProduct(filter entity.ProductFilter) ([]entity.Product,error){
 	var product []entity.Product
-	product,err:=s.repo.FindAll()
+	if filter.Name!=""&&len(filter.Name)<2 {
+		return product,errors.New("Ketik query lebih panjang")
+	}
+	if filter.SKU!=""&&len(filter.SKU)<=2 {
+		return product,errors.New("Ketik SKU lebih panjang")
+	}
+	product,err:=s.repo.FindAll(filter)
 	return product,err
 }
 

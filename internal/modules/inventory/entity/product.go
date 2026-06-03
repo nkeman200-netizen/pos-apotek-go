@@ -16,5 +16,14 @@ type Product struct {
 	TotalStock int `gorm:"-" json:"total_stok"`
 	CreatedAt    time.Time `gorm:"autoCreateTime;" json:"created_at"`
 	UpdatedAt    time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+}
 
+
+type ProductFilter struct{
+	Name string
+	CategoryId string
+	UnitId string
+	SKU string
+	Page int
+	Limit int
 }

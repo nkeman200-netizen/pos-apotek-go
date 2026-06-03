@@ -10,7 +10,7 @@ type ProductRepository interface {
 	Create(product *entity.Product)error
 	Update(product *entity.Product)error
 	Delete(id uint) error
-	FindAll() ([]entity.Product,error)
+	FindAll(filter entity.ProductFilter) ([]entity.Product,error)
 	FindById(id uint) (entity.Product,error)
 	FindBySKU(sku string)(entity.Product,error)
 }
@@ -34,9 +34,28 @@ func (r *productRepositoryimpl) Delete(id uint) error{
 	return r.db.Delete(&entity.Product{},id).Error
 }
 
-func(r *productRepositoryimpl) FindAll()([]entity.Product,error){
+func(r *productRepositoryimpl) FindAll(filter entity.ProductFilter)([]entity.Product,error){
 	var product []entity.Product
-	err:=r.db.Preload("Unit").Preload("Category").Find(&product).Error
+	query:=r.db.Model(&entity.Product{}).
+		Preload("Unit").
+		Preload("Category").
+		Where("is_active=?",true)
+
+	if filter.CategoryId!="" {
+		query=query.Where("category_id=?",filter.CategoryId)
+	}
+	if filter.Name!="" {
+		query=query.Where("name like ?","%"+filter.Name+"%")
+	}
+	if filter.SKU!="" {
+		query=query.Where("sku=?",filter.SKU)
+	}
+	if filter.UnitId!="" {
+		query=query.Where("unit_id=?",filter.UnitId)
+	}
+
+	offset := (filter.Page - 1) * filter.Limit
+	err:=query.Limit(filter.Limit).Offset(offset).Find(&product).Error
 	return product,err
 }
 

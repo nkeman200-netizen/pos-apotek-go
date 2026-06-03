@@ -12,6 +12,7 @@ import (
 
 func JwtAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		//ambil bearer dari autorization
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, response.Response[any]{
@@ -23,6 +24,7 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// pisahin kata bearer dengna tokennya
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, response.Response[any]{
@@ -34,6 +36,7 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		//parse token dan validasi
 		tokenString := parts[1]
 		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 			return []byte(os.Getenv("JWT_SECRET_KEY")), nil
@@ -48,6 +51,7 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		//pecah data token dan simpan di context gin
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if ok && token.Valid {
 			c.Set("user_id",claims["id"])
